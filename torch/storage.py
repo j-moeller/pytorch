@@ -253,7 +253,7 @@ class _StorageBase:
         elif get_sharing_strategy() == 'file_system':
             self._share_filename_cpu_()
         else:
-            self._share_fd_cpu_()
+            self.__shm_info = self._share_fd_cpu_()
         return self
 
     @classmethod
