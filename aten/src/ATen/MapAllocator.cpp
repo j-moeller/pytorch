@@ -342,15 +342,19 @@ MapAllocator::MapAllocator(WithFd, c10::string_view filename, int fd, int flags,
     if (flags_ & ALLOCATOR_MAPPED_UNLINK) {
       if (flags_ & ALLOCATOR_MAPPED_SHAREDMEM) {
 #ifdef HAVE_SHM_UNLINK
+        /*
         if (shm_unlink(filename_.c_str()) == -1) {
           TORCH_CHECK(false, "could not unlink the shared memory file ", filename_, " : ", strerror(errno), " (", errno, ")");
         }
+        */
 #else
         TORCH_CHECK(false, "could not unlink the shared memory file ", filename_, ", shm_unlink not available on platform");
 #endif
       } else {
+        /*
         if (unlink(filename_.c_str()) == -1)
           TORCH_CHECK(false, "could not unlink file ", filename_, " : ", strerror(errno), " (", errno, ")");
+        */
       }
     }
 
