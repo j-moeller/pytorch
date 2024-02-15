@@ -237,11 +237,12 @@ static PyObject* THPStorage_shareFd(PyObject* self, PyObject* noargs) {
   if (!size)
     return nullptr;
 
-  THPObjectPtr tuple(PyTuple_New(2));
+  THPObjectPtr tuple(PyTuple_New(3));
   if (!tuple)
     return nullptr;
   PyTuple_SET_ITEM(tuple.get(), 0, storage_handle.release());
   PyTuple_SET_ITEM(tuple.get(), 1, size.release());
+  PyTuple_SET_ITEM(tuple.get(), 2, PyUnicode_FromString(ctx->filename));
   return tuple.release();
   END_HANDLE_TH_ERRORS
 }

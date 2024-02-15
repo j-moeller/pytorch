@@ -1172,8 +1172,8 @@ class TypedStorage:
         return self._untyped_storage._shared_incref(*args, **kwargs)
 
     def _share_fd_cpu_(self, *args, **kwargs):
-        fd, size = self._untyped_storage._share_fd_cpu_(*args, **kwargs)
-        return fd, size // self._element_size()
+        fd, size, shm_name = self._untyped_storage._share_fd_cpu_(*args, **kwargs)
+        return fd, size // self._element_size(), shm_name
 
     def _get_legacy_storage_class(self):
         if self.dtype not in _dtype_to_storage_type_map():

@@ -565,7 +565,7 @@ def reduce_storage(storage):
         # (with size 0) cannot be mmapped.
         return (rebuild_storage_empty, (type(storage),))
     else:
-        fd, size = storage._share_fd_cpu_()
+        fd, size, _ = storage._share_fd_cpu_()
         df = multiprocessing.reduction.DupFd(fd)
         cache_key = fd_id(fd)
         metadata = (df, size)
