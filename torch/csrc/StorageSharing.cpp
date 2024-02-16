@@ -281,7 +281,7 @@ static PyObject* THPStorage_setSharedMemory(PyObject* self, PyObject* args) {
     int flags = at::ALLOCATOR_MAPPED_SHARED |
       at::ALLOCATOR_MAPPED_SHAREDMEM |
       at::ALLOCATOR_MAPPED_NOCREATE;
-    auto sptr = MapAllocator::makeDataPtr(shm_name.c_str(), flags, shm_size * sizeof(uint8_t), nullptr);
+    auto sptr = at::MapAllocator::makeDataPtr(shm_name.c_str(), flags, shm_size * sizeof(uint8_t), nullptr);
 
     // Replace the old data_ptr and allocator with the new ones
     storage.set_data_ptr(std::move(sptr));
