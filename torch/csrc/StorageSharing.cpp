@@ -28,6 +28,7 @@
 #include <ATen/MapAllocator.h>
 #include <ATen/StorageUtils.h>
 #include <torch/csrc/utils/python_numbers.h>
+#include <torch/csrc/utils/python_strings.h>
 #include <atomic>
 #include <string>
 
@@ -269,15 +270,17 @@ static PyObject* THPStorage_setSharedMemory(PyObject* self, PyObject* args) {
     return nullptr;
   }
 
-  std::string shm_name = THPUtils_unpackString(shm_name);
-  std::string shm_size = THPUtils_unpackLong(shm_size);
+  std::string shm_name = THPUtils_unpackString(_shm_name);
+  std::string shm_size = THPUtils_unpackLong(_shm_size);
 
   at::MapAllocator* ctx = at::MapAllocator::fromDataPtr(storage.data_ptr());
   // Storage is already in shared memory, just return a handle
   if (ctx) {
     // done
   } else {  
-    int flags = ALLOCATOR_MAPPED_SHARED | ALLOCATOR_MAPPED_SHAREDMEM | ALLOCATOR_MAPPED_NOCREATE;
+    int flags = at::ALLOCATOR_MAPPED_SHARED |
+      at::ALLOCATOR_MAPPED_SHAREDMEM |
+      at::ALLOCATOR_MAPPED_NOCREATE;
     auto sptr = MapAllocator::makeDataPtr(shm_name.c_str(), flags, shm_size * sizeof(uint8_t), nullptr);
 
     // Replace the old data_ptr and allocator with the new ones
