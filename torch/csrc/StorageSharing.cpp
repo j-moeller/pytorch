@@ -260,7 +260,7 @@ static PyObject* THPStorage_setSharedMemory(PyObject* self, PyObject* args) {
 
   PyObject* _shm_name = PyTuple_GET_ITEM(args, 0);
   PyObject* _shm_size = PyTuple_GET_ITEM(args, 1);
-  if (!THPUtils_checkString(_shm_name) || !THPUtils_checkLong(_size)) {
+  if (!THPUtils_checkString(_shm_name) || !THPUtils_checkLong(_shm_size)) {
     THPUtils_invalidArguments(
         args,
         nullptr,
@@ -271,7 +271,7 @@ static PyObject* THPStorage_setSharedMemory(PyObject* self, PyObject* args) {
   }
 
   std::string shm_name = THPUtils_unpackString(_shm_name);
-  std::string shm_size = THPUtils_unpackLong(_shm_size);
+  int64_t shm_size = THPUtils_unpackLong(_shm_size);
 
   at::MapAllocator* ctx = at::MapAllocator::fromDataPtr(storage.data_ptr());
   // Storage is already in shared memory, just return a handle
