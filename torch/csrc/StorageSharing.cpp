@@ -250,6 +250,64 @@ static PyObject* THPStorage_shareFd(PyObject* self, PyObject* noargs) {
   END_HANDLE_TH_ERRORS
 }
 
+static PyObject* THPStorage_setSharedMemory(PyObject* self, PyObject* args) {
+  HANDLE_TH_ERRORS
+  THPStorage_assertNotNull(self);
+  const auto& storage = THPStorage_Unpack(self);
+  TORCH_CHECK(
+      storage.device_type() == at::kCPU, "_share_fd_: only available on CPU");
+
+  PyObject* _shm_name = PyTuple_GET_ITEM(args, 0);
+  PyObject* _shm_size = PyTuple_GET_ITEM(args, 1);
+  if (!THPUtils_checkString(_shm_name) || !THPUtils_checkLong(_size)) {
+    THPUtils_invalidArguments(
+        args,
+        nullptr,
+        "_set_shared_memory",
+        1,
+        "a handle (string/bytes) and storage size (int)");
+    return nullptr;
+  }
+
+  std::string shm_name = THPUtils_unpackString(shm_name);
+  std::string shm_size = THPUtils_unpackLong(shm_size);
+
+  at::MapAllocator* ctx = at::MapAllocator::fromDataPtr(storage.data_ptr());
+  // Storage is already in shared memory, just return a handle
+  if (ctx) {
+    // done
+  } else {  
+    int flags = ALLOCATOR_MAPPED_SHARED | ALLOCATOR_MAPPED_SHAREDMEM | ALLOCATOR_MAPPED_NOCREATE;
+    auto sptr = MapAllocator::makeDataPtr(shm_name.c_str(), flags, shm_size * sizeof(uint8_t), nullptr);
+
+    // Replace the old data_ptr and allocator with the new ones
+    storage.set_data_ptr(std::move(sptr));
+    storage.unsafeGetStorageImpl()->set_allocator(nullptr);
+
+    ctx = at::MapAllocator::fromDataPtr(storage.data_ptr());
+    AT_ASSERT(ctx);
+  }
+
+  THPObjectPtr storage_handle(THPUtils_packInt32(ctx->fd()));
+  if (!storage_handle)
+    return nullptr;
+  THPObjectPtr size(THPUtils_packUInt64(storage.nbytes()));
+  if (!size)
+    return nullptr;
+  THPObjectPtr shm_filename(PyBytes_FromString(ctx->filename()));
+  if (!shm_filename)
+    return nullptr;
+
+  THPObjectPtr tuple(PyTuple_New(3));
+  if (!tuple)
+    return nullptr;
+  PyTuple_SET_ITEM(tuple.get(), 0, storage_handle.release());
+  PyTuple_SET_ITEM(tuple.get(), 1, size.release());
+  PyTuple_SET_ITEM(tuple.get(), 2, shm_filename.release());
+  return tuple.release();
+  END_HANDLE_TH_ERRORS
+}
+
 static PyObject* THPStorage_newSharedFd(PyObject* _unused, PyObject* args) {
   HANDLE_TH_ERRORS
   TORCH_CHECK(PyTuple_GET_SIZE(args) == 2, "tuple of 2 items expected");
@@ -671,6 +729,7 @@ static PyMethodDef THPStorage_sharingMethods[] = {
      METH_VARARGS | METH_STATIC,
      nullptr},
     {"_share_fd_cpu_", THPStorage_shareFd, METH_NOARGS, nullptr},
+    {"_set_shared_memory", THPStorage_setSharedMemory, METH_VARARGS, nullptr},
     {"_new_shared_fd_cpu",
      THPStorage_newSharedFd,
      METH_VARARGS | METH_STATIC,

@@ -52,6 +52,7 @@ class _StorageBase:
     # Defined in torch/csrc/generic/StorageSharing.cpp
     def _share_filename_cpu_(self, *args, **kwargs): ...  # noqa: E704
     def _share_fd_cpu_(self, *args, **kwargs): ...  # noqa: E704
+    def _set_shared_memory(self, *args, **kwargs): ...  # noqa: E704
     @classmethod
     def _new_using_filename_cpu(cls: Type[T], size: int) -> T: ...  # type: ignore[empty-body] # noqa: E704
     @classmethod
@@ -372,6 +373,10 @@ class UntypedStorage(torch._C.StorageBase, _StorageBase):
     @_share_memory_lock_protected
     def _share_fd_cpu_(self, *args, **kwargs):
         return super()._share_fd_cpu_(*args, **kwargs)
+
+    @_share_memory_lock_protected
+    def _set_shared_memory(self, *args, **kwargs):
+        return super()._set_shared_memory(*args, **kwargs)
 
     @_share_memory_lock_protected
     def _share_filename_cpu_(self, *args, **kwargs):
@@ -1174,6 +1179,9 @@ class TypedStorage:
     def _share_fd_cpu_(self, *args, **kwargs):
         fd, size, shm_name = self._untyped_storage._share_fd_cpu_(*args, **kwargs)
         return fd, size // self._element_size(), shm_name
+
+    def _set_shared_memory(self, *args, **kwargs):
+        return self._untyped_storage._set_shared_memory(*args, **kwargs)
 
     def _get_legacy_storage_class(self):
         if self.dtype not in _dtype_to_storage_type_map():
