@@ -4,6 +4,8 @@
 #include <ATen/Context.h>
 #include <ATen/native/mkldnn/Matmul.h>
 
+#include <iostream>
+
 #if !AT_MKLDNN_ENABLED()
 
 namespace at {
@@ -116,6 +118,7 @@ mkldnn_gemm(
     const scalar_t *b_data, int64_t ldb,
     float beta,
     scalar_t *c_data, int64_t ldc) {
+  std::cerr << "mkldnn_gemm" << std::endl;
   bool bf16_usable = std::is_same_v<scalar_t, c10::BFloat16> && use_mkldnn_bf16_matmul();
   bool fp16_usable = std::is_same_v<scalar_t, c10::Half> && use_mkldnn_fp16_matmul();
   bool bf32_usable = std::is_same_v<scalar_t, float> && use_mkldnn_bf32_matmul();
@@ -192,6 +195,7 @@ bool mkldnn_bf16_gemm(
     const c10::BFloat16 *b, int64_t ldb,
     float beta,
     c10::BFloat16 *c, int64_t ldc) {
+  std::cerr << "mkldnn_bf16_gemm" << std::endl;
   return mkldnn_gemm<c10::BFloat16>(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
 }
 
@@ -203,6 +207,7 @@ bool mkldnn_fp16_gemm(
     const c10::Half *b, int64_t ldb,
     float beta,
     c10::Half *c, int64_t ldc) {
+  std::cerr << "mkldnn_fp16_gemm" << std::endl;
   return mkldnn_gemm<c10::Half>(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
 }
 
@@ -214,6 +219,7 @@ bool mkldnn_bf32_gemm(
     const float *b, int64_t ldb,
     float beta,
     float *c, int64_t ldc){
+  std::cerr << "mkldnn_bf32_gemm" << std::endl;
       return mkldnn_gemm<float>(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
     }
 
@@ -223,6 +229,7 @@ void mkldnn_matmul(
     const Tensor &result,
     float beta,
     float alpha) {
+  std::cerr << "mkldnn_matmul" << std::endl;
   TORCH_CHECK((mat1.dim() == 2 && mat2.dim() == 2) || // aten::addmm
               (mat1.dim() == 3 && mat2.dim() == 3) || // aten::bmm, aten::baddbmm
               (mat1.dim() == 2 && mat2.dim() == 1) || // aten::mv

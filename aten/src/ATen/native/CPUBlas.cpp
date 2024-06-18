@@ -8,6 +8,7 @@
 #include <c10/util/irange.h>
 
 #include <climits>
+#include <iostream>
 
 #if AT_BUILD_WITH_BLAS()
 #if C10_IOS
@@ -120,6 +121,7 @@ void gemm(
     const double *b, int64_t ldb,
     const double beta,
     double *c, int64_t ldc) {
+  std::cerr << "gemm 0" << std::endl;
   internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #if AT_BUILD_WITH_BLAS()
   if (use_blas_gemm(transa, transb, m, n, k, lda, ldb, ldc)) {
@@ -163,6 +165,7 @@ void gemm(
     const float *b, int64_t ldb,
     const float beta,
     float *c, int64_t ldc) {
+  std::cerr << "gemm 1" << std::endl;
   internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #if AT_MKLDNN_ENABLED()
    if (mkldnn_bf32_gemm(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc)) {
@@ -211,6 +214,7 @@ void gemm(
     const c10::complex<double> *b, int64_t ldb,
     const c10::complex<double> beta,
     c10::complex<double> *c, int64_t ldc) {
+  std::cerr << "gemm 2" << std::endl;
   internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #if AT_BUILD_WITH_BLAS()
   if (use_blas_gemm(transa, transb, m, n, k, lda, ldb, ldc)) {
@@ -254,6 +258,7 @@ void gemm(
     const c10::complex<float> *b, int64_t ldb,
     const c10::complex<float> beta,
     c10::complex<float> *c, int64_t ldc) {
+  std::cerr << "gemm 3" << std::endl;
   internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #if AT_BUILD_WITH_BLAS()
   if (use_blas_gemm(transa, transb, m, n, k, lda, ldb, ldc)) {
@@ -297,6 +302,8 @@ void gemm(
    const at::BFloat16 *b, int64_t ldb,
    const float beta,
    at::BFloat16 *c, int64_t ldc) {
+  std::cerr << "gemm 4" << std::endl;
+
    internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #if AT_BUILD_WITH_BLAS() && defined(BLAS_HAS_SBGEMM)
    if (use_blas_gemm(transa, transb, m, n, k, lda, ldb, ldc)) {
@@ -337,6 +344,7 @@ void gemm(
    const at::Half *b, int64_t ldb,
    const float beta,
    at::Half *c, int64_t ldc) {
+  std::cerr << "gemm 5" << std::endl;
    internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #if AT_MKLDNN_ENABLED()
    if (mkldnn_fp16_gemm(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc)) {
@@ -356,6 +364,7 @@ void gemm(
     const at::BFloat16 *b, int64_t ldb,
     const float beta,
     float *c, int64_t ldc) {
+  std::cerr << "gemm 6" << std::endl;
   internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #if AT_BUILD_WITH_BLAS() && defined(BLAS_HAS_SBGEMM)
    if (use_blas_gemm(transa, transb, m, n, k, lda, ldb, ldc)) {
@@ -407,6 +416,7 @@ void gemm(
     const at::Half *b, int64_t ldb,
     const float beta,
     float *c, int64_t ldc) {
+  std::cerr << "gemm 7" << std::endl;
   internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #ifdef MKL_HAS_SHGEMM
   if (use_blas_gemm(transa, transb, m, n, k, lda, ldb, ldc)) {
@@ -443,6 +453,7 @@ void gemm(
     const int64_t *b, int64_t ldb,
     const int64_t beta,
     int64_t *c, int64_t ldc) {
+  std::cerr << "gemm 8" << std::endl;
   internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #ifdef USE_FBGEMM
   if (alpha == 1 && (beta == 0 || beta == 1)) {
@@ -487,6 +498,7 @@ static void gemm_batched_mkl_impl(
       const scalar_t **b, int64_t ldb,
       scalar_t beta,
       scalar_t **c, int64_t ldc) {
+  std::cerr << "gemm_batched_mkl_impl" << std::endl;
   for (int64_t i = 0; i < batch_size;) {
     int sub_batch = std::min(batch_size - i, int64_t{INT_MAX});
     mkl_gemm_batched(transa, transb, sub_batch, m, n, k, alpha,
@@ -511,6 +523,7 @@ void gemm_batched_generic(
     const scalar_t **b, int64_t ldb,
     scalar_t beta,
     scalar_t **c, int64_t ldc) {
+  std::cerr << "gemm_batched_generic" << std::endl;
   for (const auto batch : c10::irange(batch_size)) {
     gemm(transa, transb, m, n, k, alpha, a[batch], lda, b[batch], ldb, beta, c[batch], ldc);
   }
@@ -525,6 +538,7 @@ void gemm_batched(
     const scalar_t **b, int64_t ldb,
     scalar_t beta,
     scalar_t **c, int64_t ldc) {
+  std::cerr << "gemm_batched" << std::endl;
   if (batch_size == 1) {
     return gemm(transa, transb, m, n, k, alpha, a[0], lda, b[0], ldb, beta, c[0], ldc);
   }
@@ -553,6 +567,7 @@ void gemm_batched_with_stride_generic(
     const scalar_t *b, int64_t ldb, int64_t batch_stride_b,
     scalar_t beta,
     scalar_t *c, int64_t ldc, int64_t batch_stride_c) {
+  std::cerr << "gemm_batched_with_stride_generic" << std::endl;
   for (const auto batch : c10::irange(batch_size)) {
     const auto a_batch = a + batch_stride_a * batch;
     const auto b_batch = b + batch_stride_b * batch;
@@ -570,6 +585,7 @@ void gemm_batched_with_stride(
     const scalar_t *b, int64_t ldb, int64_t batch_stride_b,
     scalar_t beta,
     scalar_t *c, int64_t ldc, int64_t batch_stride_c) {
+  std::cerr << "gemm_batched_with_stride" << std::endl;
   if (batch_size == 1) {
     return gemm(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
   }
