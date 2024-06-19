@@ -34,8 +34,6 @@
 #include <utility>
 #include <vector>
 
-#include <iostream>
-
 namespace at::native {
 
 // Parse environment variable "TORCH_LINEAR_FLATTEN_3D"
@@ -72,7 +70,6 @@ static inline Tensor _flatten_nd_linear(const Tensor& input, const Tensor& weigh
 
 
 Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Tensor>& bias_opt) {
-  std::cerr << "Linear.cpp:linear" << std::endl;
   // _matmul_impl checks this again later, but _flatten_nd_linear does not work on scalars inputs,
   // so let's try to catch this here already
   const auto input_dim = input.dim();
@@ -124,7 +121,6 @@ Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Ten
 }
 
 Tensor& linear_out(const Tensor& input, const Tensor& weight, const c10::optional<Tensor>& bias_opt, Tensor& output) {
-  std::cerr << "Linear.cpp:linear_out" << std::endl;
   TORCH_CHECK(!input.is_mkldnn(), "linear doesn't support out for MKLDNN tensors");
   // See [Note: hacky wrapper removal for optional tensor]
   auto bias = bias_opt.has_value()
@@ -146,7 +142,6 @@ Tensor& linear_out(const Tensor& input, const Tensor& weight, const c10::optiona
 // batch matrix multiplication
 // its main purpose is to provide a pairwise reduction for einsum
 static Tensor sumproduct_pair(const Tensor& left_, const Tensor& right_, IntArrayRef sum_dims_, bool keepdim) {
-  std::cerr << "Linear.cpp:sumproduct_pair" << std::endl;
   // assumes that tensors have been pre-unsqueezed (so that all dimensions match - after broadcasting)
   // but makes no other assumptions on the order of dimensions
   TORCH_CHECK(left_.dim()==right_.dim(), "number of dimensions must match");
@@ -257,7 +252,6 @@ static Tensor sumproduct_pair(const Tensor& left_, const Tensor& right_, IntArra
 // default to going left => right. The path is a list of indices processed the same
 // way as opt-einsum: https://optimized-einsum.readthedocs.io/en/stable/path_finding.html#format-of-the-path
 Tensor einsum(c10::string_view equation, TensorList operands, at::OptionalIntArrayRef path) {
-  std::cerr << "Linear.cpp:einsum" << std::endl;
   TORCH_CHECK(!operands.empty(), "einsum(): must provide at least one operand");
   const auto num_ops = operands.size();
 
@@ -640,7 +634,6 @@ Tensor einsum(c10::string_view equation, TensorList operands, at::OptionalIntArr
 Tensor _trilinear(const Tensor& i1_, const Tensor& i2_, const Tensor& i3_,
                   IntArrayRef expand1_, IntArrayRef expand2_, IntArrayRef expand3_,
                   IntArrayRef sumdim_, int64_t unroll_dim) {
-  std::cerr << "Linear.cpp:_trilinear" << std::endl;
   int64_t total_dim = i1_.dim()+expand1_.size();
   TORCH_CHECK((unroll_dim >= 0) && (unroll_dim < total_dim), "unroll_dim must be in [0,", total_dim-1, "]");
   auto expand1 = at::dim_list_to_bitset(expand1_, total_dim);
@@ -714,7 +707,6 @@ Tensor _trilinear(const Tensor& i1_, const Tensor& i2_, const Tensor& i3_,
 }
 
 Tensor bilinear(const Tensor& input1, const Tensor& input2, const Tensor& weight, const c10::optional<Tensor>& bias_opt) {
-  std::cerr << "Linear.cpp:bilinear" << std::endl;
   // See [Note: hacky wrapper removal for optional tensor]
   c10::MaybeOwned<Tensor> bias_maybe_owned = at::borrow_from_optional_tensor(bias_opt);
   const Tensor& bias = *bias_maybe_owned;
@@ -772,7 +764,6 @@ Tensor bilinear(const Tensor& input1, const Tensor& input2, const Tensor& weight
 // implements tensordot, a matrix-multiplication-like contraction, but the dimensions given
 // in the two dimension lists
 Tensor tensordot(const Tensor& input1, const Tensor& input2, IntArrayRef dims1, IntArrayRef dims2) {
-  std::cerr << "Linear.cpp:tensordot" << std::endl;
   TORCH_CHECK(dims1.size() == dims2.size(), "both dimension lists should have same length");
   TORCH_CHECK(input1.scalar_type() == input2.scalar_type(), "both inputs should have same dtype");
   SymInt csize = 1;  // total size of the contracted dimensions
@@ -831,7 +822,6 @@ Tensor tensordot(const Tensor& input1, const Tensor& input2, IntArrayRef dims1, 
 }
 
 Tensor &tensordot_out(const Tensor& input1, const Tensor& input2, IntArrayRef dims1, IntArrayRef dims2, Tensor& result) {
-  std::cerr << "Linear.cpp:tensordot_out" << std::endl;
   Tensor result_tmp = at::native::tensordot(input1, input2, dims1, dims2);
   auto result_dtype = result_tmp.scalar_type();
   auto output_tensor_dtype = result.scalar_type();
