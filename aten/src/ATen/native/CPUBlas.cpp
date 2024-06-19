@@ -8,7 +8,29 @@
 #include <c10/util/irange.h>
 
 #include <climits>
-#include <iostream>
+
+extern "C" __attribute__((weak)) void dgemm_called();
+extern "C" __attribute__((weak)) void sgemm_called();
+extern "C" __attribute__((weak)) void cgemm_called();
+extern "C" __attribute__((weak)) void zgemm_called();
+extern "C" __attribute__((weak)) void sbgemm_called();
+
+extern "C" __attribute__((weak)) void dgemm_stub_called();
+extern "C" __attribute__((weak)) void sgemm_stub_called();
+extern "C" __attribute__((weak)) void cgemm_stub_called();
+extern "C" __attribute__((weak)) void zgemm_stub_called();
+extern "C" __attribute__((weak)) void sbgemm_stub_called();
+
+extern "C" __attribute__((weak)) void cblas_dgemm_called();
+extern "C" __attribute__((weak)) void cblas_sgemm_called();
+extern "C" __attribute__((weak)) void cblas_cgemm_called();
+extern "C" __attribute__((weak)) void cblas_zgemm_called();
+extern "C" __attribute__((weak)) void cblas_sbgemm_called();
+
+extern "C" __attribute__((weak)) void gemm_cblas_gemm_i64_i64acc_called();
+
+extern "C" __attribute__((weak)) void unknown_0_gemm_stub_called();
+extern "C" __attribute__((weak)) void unknown_1_gemm_stub_called();
 
 #if AT_BUILD_WITH_BLAS()
 #if C10_IOS
@@ -121,7 +143,6 @@ void gemm(
     const double *b, int64_t ldb,
     const double beta,
     double *c, int64_t ldc) {
-  std::cerr << "gemm 0 (double)" << std::endl;
   internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #if AT_BUILD_WITH_BLAS()
   if (use_blas_gemm(transa, transb, m, n, k, lda, ldb, ldc)) {
@@ -130,7 +151,7 @@ void gemm(
     #if C10_IOS
     CBLAS_TRANSPOSE transa_ = to_apple_accelerate_transpose(transa);
     CBLAS_TRANSPOSE transb_ = to_apple_accelerate_transpose(transb);
-    std::cerr << "CALL: cblas_dgemm" << std::endl;
+    if (cblas_dgemm_called) {cblas_dgemm_called();}
     cblas_dgemm(CblasColMajor,
       transa_, transb_,
       m_, n_, k_,
@@ -141,7 +162,7 @@ void gemm(
       c, ldc_);
     #else
     char transa_ = to_blas(transa), transb_ = to_blas(transb);
-    std::cerr << "CALL: dgemm_" << std::endl;
+    if (dgemm_called) {dgemm_called();}
     dgemm_(
         &transa_, &transb_,
         &m_, &n_, &k_,
@@ -154,7 +175,7 @@ void gemm(
     return;
   }
 #endif
-  std::cerr << "CALL: gemm_stub" << std::endl;
+  if (dgemm_stub_called) {dgemm_stub_called();}
   gemm_stub(
       at::kCPU, at::kDouble,
       transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
@@ -168,10 +189,8 @@ void gemm(
     const float *b, int64_t ldb,
     const float beta,
     float *c, int64_t ldc) {
-  std::cerr << "gemm 1 (float)" << std::endl;
   internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #if AT_MKLDNN_ENABLED()
-   std::cerr << "CALL: mkldnn_bf32_gemm" << std::endl;
    if (mkldnn_bf32_gemm(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc)) {
      return;
    }
@@ -183,7 +202,7 @@ void gemm(
     #if C10_IOS
     CBLAS_TRANSPOSE transa_ = to_apple_accelerate_transpose(transa);
     CBLAS_TRANSPOSE transb_ = to_apple_accelerate_transpose(transb);
-    std::cerr << "CALL: cblas_sgemm" << std::endl;
+    if (cblas_sgemm_called) {cblas_sgemm_called();}
     cblas_sgemm(CblasColMajor,
       transa_, transb_,
       m_, n_, k_,
@@ -194,7 +213,7 @@ void gemm(
       c, ldc_);
     #else
     char transa_ = to_blas(transa), transb_ = to_blas(transb);
-    std::cerr << "CALL: sgemm_" << std::endl;
+    if (sgemm_called) {sgemm_called();}
     sgemm_(
         &transa_, &transb_,
         &m_, &n_, &k_,
@@ -207,7 +226,7 @@ void gemm(
     return;
   }
 #endif
-  std::cerr << "CALL: gemm_stub" << std::endl;
+  if (sgemm_stub_called) {sgemm_stub_called();}
   gemm_stub(
       at::kCPU, at::kFloat,
       transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
@@ -221,7 +240,6 @@ void gemm(
     const c10::complex<double> *b, int64_t ldb,
     const c10::complex<double> beta,
     c10::complex<double> *c, int64_t ldc) {
-  std::cerr << "gemm 2 (complex double)" << std::endl;
   internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #if AT_BUILD_WITH_BLAS()
   if (use_blas_gemm(transa, transb, m, n, k, lda, ldb, ldc)) {
@@ -230,7 +248,7 @@ void gemm(
     #if C10_IOS
     CBLAS_TRANSPOSE transa_ = to_apple_accelerate_transpose(transa);
     CBLAS_TRANSPOSE transb_ = to_apple_accelerate_transpose(transb);
-    std::cerr << "CALL: cblas_zgemm" << std::endl;
+    if (cblas_zgemm_called) {cblas_zgemm_called();}
     cblas_zgemm(CblasColMajor,
       transa_, transb_,
       m_, n_, k_,
@@ -241,7 +259,7 @@ void gemm(
       c, ldc_);
     #else
     char transa_ = to_blas(transa), transb_ = to_blas(transb);
-    std::cerr << "CALL: zgemm_" << std::endl;
+    if (zgemm_called) {zgemm_called();}
     zgemm_(
         &transa_, &transb_,
         &m_, &n_, &k_,
@@ -254,7 +272,7 @@ void gemm(
     return;
   }
 #endif
-  std::cerr << "CALL: gemm_stub" << std::endl;
+  if (zgemm_stub_called) {zgemm_stub_called();}
   gemm_stub(
       at::kCPU, at::kComplexDouble,
       transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
@@ -268,7 +286,6 @@ void gemm(
     const c10::complex<float> *b, int64_t ldb,
     const c10::complex<float> beta,
     c10::complex<float> *c, int64_t ldc) {
-  std::cerr << "gemm 3 (complex float)" << std::endl;
   internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #if AT_BUILD_WITH_BLAS()
   if (use_blas_gemm(transa, transb, m, n, k, lda, ldb, ldc)) {
@@ -277,7 +294,7 @@ void gemm(
     #if C10_IOS
     CBLAS_TRANSPOSE transa_ = to_apple_accelerate_transpose(transa);
     CBLAS_TRANSPOSE transb_ = to_apple_accelerate_transpose(transb);
-    std::cerr << "CALL: cblas_cgemm" << std::endl;
+    if (cblas_cgemm_called) {cblas_cgemm_called();}
     cblas_cgemm(CblasColMajor,
       transa_, transb_,
       m_, n_, k_,
@@ -288,7 +305,7 @@ void gemm(
       c, ldc_);
     #else
     char transa_ = to_blas(transa), transb_ = to_blas(transb);
-    std::cerr << "CALL: cgemm_" << std::endl;
+    if (cgemm_called) {cgemm_called();}
     cgemm_(
         &transa_, &transb_,
         &m_, &n_, &k_,
@@ -301,7 +318,7 @@ void gemm(
     return;
   }
 #endif
-  std::cerr << "CALL: gemm_stub" << std::endl;
+  if (cgemm_stub_called) {cgemm_stub_called();}
   gemm_stub(
       at::kCPU, at::kComplexFloat,
       transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
@@ -315,7 +332,6 @@ void gemm(
    const at::BFloat16 *b, int64_t ldb,
    const float beta,
    at::BFloat16 *c, int64_t ldc) {
-  std::cerr << "gemm 4 (float 16)" << std::endl;
 
    internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #if AT_BUILD_WITH_BLAS() && defined(BLAS_HAS_SBGEMM)
@@ -326,7 +342,7 @@ void gemm(
       int c_size = n_ * ldc_;
       // C matrix in OpenBLAS sbgemm are of type "float" so we have to convert, copy and copy back.
       std::vector<float> float_v(c, c + c_size);
-      std::cerr << "CALL: sbgemm_" << std::endl;
+      if (sbgemm_called) {sbgemm_called();}
       sbgemm_(&transa_, &transb_,
               &m_, &n_, &k_,
               &alpha_,
@@ -341,12 +357,11 @@ void gemm(
    }
 #endif
 #if AT_MKLDNN_ENABLED()
-   std::cerr << "CALL: mkldnn_bf16_gemm" << std::endl;
    if (mkldnn_bf16_gemm(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc)) {
      return;
    }
 #endif
-   std::cerr << "CALL: gemm_stub" << std::endl;
+   if (sbgemm_stub_called) {sbgemm_stub_called();}
    gemm_stub(
       at::kCPU, at::kBFloat16,
       transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
@@ -360,15 +375,13 @@ void gemm(
    const at::Half *b, int64_t ldb,
    const float beta,
    at::Half *c, int64_t ldc) {
-  std::cerr << "gemm 5 (half)" << std::endl;
    internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #if AT_MKLDNN_ENABLED()
-   std::cerr << "CALL: mkldnn_fp16_gemm" << std::endl;
    if (mkldnn_fp16_gemm(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc)) {
      return;
    }
 #endif
-   std::cerr << "CALL: gemm_stub" << std::endl;
+   if (unknown_0_gemm_stub_called) {unknown_0_gemm_stub_called();}
    gemm_stub(
       at::kCPU, at::kHalf,
       transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
@@ -382,14 +395,13 @@ void gemm(
     const at::BFloat16 *b, int64_t ldb,
     const float beta,
     float *c, int64_t ldc) {
-  std::cerr << "gemm 6" << std::endl;
   internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #if AT_BUILD_WITH_BLAS() && defined(BLAS_HAS_SBGEMM)
    if (use_blas_gemm(transa, transb, m, n, k, lda, ldb, ldc)) {
       int m_ = m, n_ = n, k_ = k, lda_ = lda, ldb_ = ldb, ldc_ = ldc;
       char transa_ = to_blas(transa), transb_ = to_blas(transb);
       float alpha_ = alpha, beta_ = beta;
-      std::cerr << "CALL: sbgemm_" << std::endl;
+      if (sbgemm_called) {sbgemm_called();}
       sbgemm_(&transa_, &transb_,
               &m_, &n_, &k_,
               &alpha_,
@@ -403,7 +415,6 @@ void gemm(
 #ifdef MKL_HAS_SBGEMM
   if (use_blas_gemm(transa, transb, m, n, k, lda, ldb, ldc)) {
     int m_ = m, n_ = n, k_ = k, lda_ = lda, ldb_ = ldb, ldc_ = ldc;
-    std::cerr << "CALL: mkl_gemm_bf16bf16f32" << std::endl;
     mkl_gemm_bf16bf16f32(transa, transb, m_, n_, k_, alpha, a, lda_, b, ldb_, beta, c, ldc_);
     return;
   }
@@ -412,7 +423,7 @@ void gemm(
   // and then add c in full precision.
   int64_t c_size = n * m;
   std::vector<at::BFloat16> bfloat_c(c_size, 0.f);
-  std::cerr << "CALL: gemm_stub" << std::endl;
+  if (sbgemm_stub_called) {sbgemm_stub_called();}
   gemm_stub(
       at::kCPU, at::kBFloat16,
       transa, transb, m, n, k, alpha, a, lda, b, ldb, 0.f, bfloat_c.data(), m);
@@ -437,12 +448,10 @@ void gemm(
     const at::Half *b, int64_t ldb,
     const float beta,
     float *c, int64_t ldc) {
-  std::cerr << "gemm 7" << std::endl;
   internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #ifdef MKL_HAS_SHGEMM
   if (use_blas_gemm(transa, transb, m, n, k, lda, ldb, ldc)) {
     int m_ = m, n_ = n, k_ = k, lda_ = lda, ldb_ = ldb, ldc_ = ldc;
-    std::cerr << "CALL: mkl_gemm_f16f16f32" << std::endl;
     mkl_gemm_f16f16f32(transa, transb, m_, n_, k_, alpha, a, lda_, b, ldb_, beta, c, ldc_);
     return;
   }
@@ -451,7 +460,7 @@ void gemm(
   // and then add c in full precision.
   int64_t c_size = n * m;
   std::vector<at::Half> float16_c(c_size, 0.f);
-  std::cerr << "CALL: gemm_stub" << std::endl;
+  if (gemm_stub_called) {gemm_stub_called();}
   gemm_stub(
       at::kCPU, at::kHalf,
       transa, transb, m, n, k, alpha, a, lda, b, ldb, 0.f, float16_c.data(), m);
@@ -476,7 +485,6 @@ void gemm(
     const int64_t *b, int64_t ldb,
     const int64_t beta,
     int64_t *c, int64_t ldc) {
-  std::cerr << "gemm 8" << std::endl;
   internal::normalize_last_dims(transa, transb, m, n, k, &lda, &ldb, &ldc);
 #ifdef USE_FBGEMM
   if (alpha == 1 && (beta == 0 || beta == 1)) {
@@ -490,7 +498,7 @@ void gemm(
     // C^T (n x m) = B^T (n x k) * A^T (k x m) instead.
     //
     // In this way we view C^T as the row-major ordering when passing to FBGEMM.
-    std::cerr << "CALL: cblas_gemm_i64_i64acc" << std::endl;
+    if (gemm_cblas_gemm_i64_i64acc_called) {gemm_cblas_gemm_i64_i64acc_called();}
     fbgemm::cblas_gemm_i64_i64acc(
         to_fbgemm(transb),
         to_fbgemm(transa),
@@ -508,7 +516,7 @@ void gemm(
   }
 #endif
 
-  std::cerr << "CALL: gemm_stub" << std::endl;
+  if (unknown_1_gemm_stub_called) {unknown_1_gemm_stub_called();}
   gemm_stub(
       kCPU, kLong,
       transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
@@ -523,7 +531,6 @@ static void gemm_batched_mkl_impl(
       const scalar_t **b, int64_t ldb,
       scalar_t beta,
       scalar_t **c, int64_t ldc) {
-  std::cerr << "gemm_batched_mkl_impl" << std::endl;
   for (int64_t i = 0; i < batch_size;) {
     int sub_batch = std::min(batch_size - i, int64_t{INT_MAX});
     mkl_gemm_batched(transa, transb, sub_batch, m, n, k, alpha,
@@ -548,7 +555,6 @@ void gemm_batched_generic(
     const scalar_t **b, int64_t ldb,
     scalar_t beta,
     scalar_t **c, int64_t ldc) {
-  std::cerr << "gemm_batched_generic" << std::endl;
   for (const auto batch : c10::irange(batch_size)) {
     gemm(transa, transb, m, n, k, alpha, a[batch], lda, b[batch], ldb, beta, c[batch], ldc);
   }
@@ -563,7 +569,6 @@ void gemm_batched(
     const scalar_t **b, int64_t ldb,
     scalar_t beta,
     scalar_t **c, int64_t ldc) {
-  std::cerr << "gemm_batched" << std::endl;
   if (batch_size == 1) {
     return gemm(transa, transb, m, n, k, alpha, a[0], lda, b[0], ldb, beta, c[0], ldc);
   }
@@ -592,7 +597,6 @@ void gemm_batched_with_stride_generic(
     const scalar_t *b, int64_t ldb, int64_t batch_stride_b,
     scalar_t beta,
     scalar_t *c, int64_t ldc, int64_t batch_stride_c) {
-  std::cerr << "gemm_batched_with_stride_generic" << std::endl;
   for (const auto batch : c10::irange(batch_size)) {
     const auto a_batch = a + batch_stride_a * batch;
     const auto b_batch = b + batch_stride_b * batch;
@@ -610,7 +614,6 @@ void gemm_batched_with_stride(
     const scalar_t *b, int64_t ldb, int64_t batch_stride_b,
     scalar_t beta,
     scalar_t *c, int64_t ldc, int64_t batch_stride_c) {
-  std::cerr << "gemm_batched_with_stride" << std::endl;
   if (batch_size == 1) {
     return gemm(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
   }
