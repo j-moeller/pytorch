@@ -393,6 +393,7 @@ static Tensor mkl_linear(
         }
       });
     }
+    // HERE:
     cblas_sgemm_compute(
         CblasRowMajor,
         CblasNoTrans,

@@ -550,6 +550,7 @@ static Tensor mkl_reorder_linear_weight(
   ideep::tensor& mkl_weight = itensor_from_mkldnn(packed_weight);
   auto weight_ = weight.contiguous();
   const ideep::tensor orig_w = itensor_view_from_dense(weight_);
+  // HERE:
   cblas_sgemm_pack(
       CblasRowMajor,
       CblasBMatrix,

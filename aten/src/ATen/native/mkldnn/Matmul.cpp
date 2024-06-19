@@ -200,7 +200,7 @@ bool mkldnn_bf16_gemm(
     const c10::BFloat16 *b, int64_t ldb,
     float beta,
     c10::BFloat16 *c, int64_t ldc) {
-  if (mkldnn_bf16_gemm_maybe_exec()) { mkldnn_bf16_gemm_maybe_exec(); }
+  if (mkldnn_bf16_gemm_maybe_exec) { mkldnn_bf16_gemm_maybe_exec(); }
   return mkldnn_gemm<c10::BFloat16>(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
 }
 
@@ -212,7 +212,7 @@ bool mkldnn_fp16_gemm(
     const c10::Half *b, int64_t ldb,
     float beta,
     c10::Half *c, int64_t ldc) {
-  if (mkldnn_fp16_gemm_maybe_exec()) { mkldnn_fp16_gemm_maybe_exec(); }
+  if (mkldnn_fp16_gemm_maybe_exec) { mkldnn_fp16_gemm_maybe_exec(); }
   return mkldnn_gemm<c10::Half>(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
 }
 
@@ -224,7 +224,7 @@ bool mkldnn_bf32_gemm(
     const float *b, int64_t ldb,
     float beta,
     float *c, int64_t ldc){
-      if (mkldnn_bf32_gemm_maybe_exec()) { mkldnn_bf32_gemm_maybe_exec(); }
+      if (mkldnn_bf32_gemm_maybe_exec) { mkldnn_bf32_gemm_maybe_exec(); }
       return mkldnn_gemm<float>(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
     }
 
@@ -234,7 +234,7 @@ void mkldnn_matmul(
     const Tensor &result,
     float beta,
     float alpha) {
-  if (mkldnn_matmul_maybe_exec()) { mkldnn_matmul_maybe_exec(); }
+  if (mkldnn_matmul_maybe_exec) { mkldnn_matmul_maybe_exec(); }
   TORCH_CHECK((mat1.dim() == 2 && mat2.dim() == 2) || // aten::addmm
               (mat1.dim() == 3 && mat2.dim() == 3) || // aten::bmm, aten::baddbmm
               (mat1.dim() == 2 && mat2.dim() == 1) || // aten::mv

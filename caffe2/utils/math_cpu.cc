@@ -276,6 +276,7 @@ C10_EXPORT void Gemm<float, CPUContext>(
   // MKL expects ld? >= 1
   const int lda = std::max((trans_A == CblasNoTrans) ? K : M, 1);
   const int ldb = std::max((trans_B == CblasNoTrans) ? N : K, 1);
+  // HERE:
   cblas_sgemm(
       CblasRowMajor,
       trans_A,
@@ -309,6 +310,7 @@ C10_EXPORT void GemmEx<float, CPUContext>(
     float* C,
     const int ldc,
     CPUContext* /*context*/) {
+  // HERE:
   cblas_sgemm(
       CblasRowMajor,
       trans_A,
@@ -338,6 +340,7 @@ C10_EXPORT void Gemv<float, CPUContext>(
     float* y,
     CPUContext* /*context*/,
     TensorProto::DataType /*math_type*/) {
+  // HERE:
   cblas_sgemv(CblasRowMajor, trans_A, M, N, alpha, A, N, x, 1, beta, y, 1);
 }
 
@@ -348,6 +351,7 @@ C10_EXPORT void Gemv<float, CPUContext>(
     *y = cblas_##prefix##dot(N, a, 1, b, 1);                    \
   }
 CAFFE2_SPECIALIZED_DOT(float, s)
+// HERE:
 #undef CAFFE2_SPECIALIZED_DOT
 
 #endif // CAFFE2_USE_EIGEN_FOR_BLAS
@@ -373,6 +377,7 @@ C10_EXPORT void GemmBatched<float, CPUContext>(
   const int lda = std::max((trans_A == CblasNoTrans) ? K : M, 1);
   const int ldb = std::max((trans_B == CblasNoTrans) ? N : K, 1);
   const int ldc = std::max(N, 1);
+  // HERE:
   cblas_sgemm_batch(
       CblasRowMajor,
       &trans_A,
@@ -431,6 +436,7 @@ C10_EXPORT void GemmStridedBatched<float, CPUContext>(
     B_array[i] = B + i * B_stride;
     C_array[i] = C + i * C_stride;
   }
+  // HERE:
   cblas_sgemm_batch(
       CblasRowMajor,
       &trans_A,

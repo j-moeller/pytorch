@@ -141,6 +141,7 @@ DELEGATE_SIMPLE_BINARY_FUNCTION(double, Div, vdDiv)
     MKLFunc(                                                                   \
         N, static_cast<TData>(*alpha), X, 1, static_cast<TData>(*beta), Y, 1); \
   }
+// HERE:
 DELEGATE_AXPBY(float, float, cblas_saxpby)
 #undef DELEGATE_AXPBY
 
@@ -312,6 +313,8 @@ CAFFE2_SPECIALIZED_AXPBY(float, float)
 // will delegate the Caffe math functions that are BLAS-related to either the
 // CBLAS call or the Eigen implementation.
 ////////////////////////////////////////////////////////////////////////////////
+
+// HERE:
 #ifdef CAFFE2_USE_EIGEN_FOR_BLAS
 
 #define CAFFE2_SPECIALIZED_SCALE(TAlpha, TData)                               \
@@ -448,6 +451,7 @@ DELEGATE_SCALE(float, double, cblas_dscal, cblas_daxpby)
       TData* Y,                                                               \
       CPUContext* /* context */) {                                            \
     if (Y == X) {                                                             \
+      /* HERE: */                                                             \
       BLASFunc(N, static_cast<TData>(alpha), Y, 1);                           \
     } else {                                                                  \
       EigenVectorArrayMap<TData>(Y, N) =                                      \
@@ -462,6 +466,7 @@ DELEGATE_SCALE(float, double, cblas_dscal, cblas_daxpby)
       TData* Y,                                                               \
       CPUContext* /* context */) {                                            \
     if (Y == X) {                                                             \
+      /* HERE: */                                                             \
       BLASFunc(N, static_cast<TData>(*alpha), Y, 1);                          \
     } else {                                                                  \
       EigenVectorArrayMap<TData>(Y, N) =                                      \
@@ -483,6 +488,7 @@ DELEGATE_SCALE(float, double, cblas_dscal)
       const TData* X,                                    \
       TData* Y,                                          \
       CPUContext* /* context */) {                       \
+    /* HERE: */                                          \
     BLASFunc(N, static_cast<TData>(alpha), X, 1, Y, 1);  \
   }                                                      \
   template <>                                            \
@@ -492,6 +498,7 @@ DELEGATE_SCALE(float, double, cblas_dscal)
       const TData* X,                                    \
       TData* Y,                                          \
       CPUContext* /* context */) {                       \
+    /* HERE: */                                          \
     BLASFunc(N, static_cast<TData>(*alpha), X, 1, Y, 1); \
   }
 DELEGATE_AXPY(float, float, cblas_saxpy)
