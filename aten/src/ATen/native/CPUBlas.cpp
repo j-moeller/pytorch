@@ -31,6 +31,7 @@ extern "C" __attribute__((weak)) void gemm_cblas_gemm_i64_i64acc_called();
 
 extern "C" __attribute__((weak)) void unknown_0_gemm_stub_called();
 extern "C" __attribute__((weak)) void unknown_1_gemm_stub_called();
+extern "C" __attribute__((weak)) void unknown_2_gemm_stub_called();
 
 #if AT_BUILD_WITH_BLAS()
 #if C10_IOS
@@ -460,7 +461,7 @@ void gemm(
   // and then add c in full precision.
   int64_t c_size = n * m;
   std::vector<at::Half> float16_c(c_size, 0.f);
-  if (gemm_stub_called) {gemm_stub_called();}
+  if (unknown_1_gemm_stub_called) {unknown_1_gemm_stub_called();}
   gemm_stub(
       at::kCPU, at::kHalf,
       transa, transb, m, n, k, alpha, a, lda, b, ldb, 0.f, float16_c.data(), m);
@@ -516,7 +517,7 @@ void gemm(
   }
 #endif
 
-  if (unknown_1_gemm_stub_called) {unknown_1_gemm_stub_called();}
+  if (unknown_2_gemm_stub_called) {unknown_2_gemm_stub_called();}
   gemm_stub(
       kCPU, kLong,
       transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
