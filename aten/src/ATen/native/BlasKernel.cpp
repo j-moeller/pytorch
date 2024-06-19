@@ -9,6 +9,25 @@
 #include <climits>
 #include <limits>
 
+extern "C" __attribute__((weak)) void cblas_sdot_called();
+extern "C" __attribute__((weak)) void cblas_cdotu_sub_called();
+extern "C" __attribute__((weak)) void cblas_zdotu_sub_called();
+extern "C" __attribute__((weak)) void cblas_cdotc_sub_called();
+extern "C" __attribute__((weak)) void cblas_zdotc_sub_called();
+
+extern "C" __attribute__((weak)) void dscal_called();
+extern "C" __attribute__((weak)) void sscal_called();
+extern "C" __attribute__((weak)) void dgemv_called();
+extern "C" __attribute__((weak)) void sgemv_called();
+
+extern "C" __attribute__((weak)) void sdot_called();
+extern "C" __attribute__((weak)) void ddot_called();
+
+extern "C" __attribute__((weak)) void cdotc_called();
+extern "C" __attribute__((weak)) void zdotc_called();
+extern "C" __attribute__((weak)) void zdotu_called();
+extern "C" __attribute__((weak)) void cdotu_called();
+
 namespace {
 
 /// Wrapper for const_cast<T*> with type-inference.
@@ -43,22 +62,27 @@ extern "C" void sgemv_(char *trans, int *m, int *n, float *alpha, float *a, int 
 
   static inline ffloat sdot_(const int *n, const float *x, const int *incx, const float *y, const int *incy)
   {
+    if (cblas_sdot_called) { cblas_sdot_called(); }
     return cblas_sdot(*n, x, *incx, y, *incy);
   }
   static inline void cdotu_(std::complex<float> *res, const int *n, const std::complex<float> *x, const int *incx,
   const std::complex<float> *y, const int *incy) {
+    if (cblas_cdotu_sub_called) { cblas_cdotu_sub_called(); }
     cblas_cdotu_sub(*n, x, *incx, y, *incy, res);
   }
   static inline void zdotu_(std::complex<double> *res, const int *n, const std::complex<double> *x, const int *incx,
   const std::complex<double> *y, const int *incy) {
+    if (cblas_zdotu_sub_called) { cblas_zdotu_sub_called(); }
     cblas_zdotu_sub(*n, x, *incx, y, *incy, res);
   }
   static inline void cdotc_(std::complex<float> *res, const int *n, const std::complex<float> *x, const int *incx,
   const std::complex<float> *y, const int *incy) {
+    if (cblas_cdotc_sub_called) { cblas_cdotc_sub_called(); }
     cblas_cdotc_sub(*n, x, *incx, y, *incy, res);
   }
   static inline void zdotc_(std::complex<double> *res, const int *n, const std::complex<double> *x, const int *incx,
   const std::complex<double> *y, const int *incy) {
+    if (cblas_zdotc_sub_called) { cblas_zdotc_sub_called(); }
     cblas_zdotc_sub(*n, x, *incx, y, *incy, res);
   }
 
@@ -115,11 +139,13 @@ bool scal_use_fast_path<float>(int64_t n, int64_t incx) {
 
 template <>
 void scal_fast_path<double>(int *n, double *a, double *x, int *incx) {
+  if (dscal_called) { dscal_called(); }
   dscal_(n, a, x, incx);
 }
 
 template <>
 void scal_fast_path<float>(int *n, float *a, float *x, int *incx) {
+  if (sscal_called) { sscal_called(); }
   sscal_(n, a, x, incx);
 }
 
@@ -137,11 +163,13 @@ bool gemv_use_fast_path<double>(int64_t m, int64_t n, int64_t lda, int64_t incx,
 
 template <>
 void gemv_fast_path<double>(const char *trans, const int *m, const int *n, const double *alpha, const double *a, const int *lda, const double *x, const int *incx, const double *beta, double *y, const int *incy) {
+  if (dgemv_called) { dgemv_called(); }
   dgemv_(remove_const(trans), remove_const(m), remove_const(n), remove_const(alpha), remove_const(a), remove_const(lda), remove_const(x), remove_const(incx), remove_const(beta), y, remove_const(incy));
 }
 
 template <>
 void gemv_fast_path<float>(const char *trans, const int *m, const int *n, const float *alpha, const float *a, const int *lda, const float *x, const int *incx, const float *beta, float *y, const int *incy) {
+  if (sgemv_called) { sgemv_called(); }
   sgemv_(remove_const(trans), remove_const(m), remove_const(n), remove_const(alpha), remove_const(a), remove_const(lda), remove_const(x), remove_const(incx), remove_const(beta), y, remove_const(incy));
 }
 #else
@@ -258,33 +286,39 @@ namespace blas_impl {
 #if AT_BUILD_WITH_BLAS()
 static float dot_fast_path(int n, float* x, int incx, float* y, int incy) {
   // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+  if (sdot_called) { sdot_called(); }
   return sdot_(&n, x, &incx, y, &incy);
 }
 
 static double dot_fast_path(int n, double* x, int incx, double* y, int incy) {
+  if (ddot_called) { ddot_called(); }
   return ddot_(&n, x, &incx, y, &incy);
 }
 
 static c10::complex<float> vdot_fast_path(int n, c10::complex<float>* x, int incx, c10::complex<float>* y, int incy) {
   c10::complex<float> result;
+  if (cdotc_called) { cdotc_called(); }
   cdotc_(reinterpret_cast<std::complex<float>* >(&result), &n, reinterpret_cast<std::complex<float>*>(x), &incx, reinterpret_cast<std::complex<float>*>(y), &incy);
   return result;
 }
 
 static c10::complex<double> vdot_fast_path(int n, c10::complex<double>* x, int incx, c10::complex<double>* y, int incy) {
   c10::complex<double> result;
+  if (zdotc_called) { zdotc_called(); }
   zdotc_(reinterpret_cast<std::complex<double>* >(&result), &n, reinterpret_cast<std::complex<double>*>(x), &incx, reinterpret_cast<std::complex<double>*>(y), &incy);
   return result;
 }
 
 static c10::complex<double> dot_fast_path(int n, c10::complex<double>* x, int incx, c10::complex<double>* y, int incy) {
   c10::complex<double> result;
+  if (zdotu_called) { zdotu_called(); }
   zdotu_(reinterpret_cast<std::complex<double>* >(&result), &n, reinterpret_cast<std::complex<double>*>(x), &incx, reinterpret_cast<std::complex<double>*>(y), &incy);
   return result;
 }
 
 static c10::complex<float> dot_fast_path(int n, c10::complex<float>* x, int incx, c10::complex<float>* y, int incy) {
   c10::complex<float> result;
+  if (cdotu_called) { cdotu_called(); }
   cdotu_(reinterpret_cast<std::complex<float>* >(&result), &n, reinterpret_cast<std::complex<float>*>(x), &incx, reinterpret_cast<std::complex<float>*>(y), &incy);
   return result;
 }

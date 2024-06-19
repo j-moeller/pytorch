@@ -24,8 +24,6 @@
 #include <ATen/ops/sparse_coo_tensor.h>
 #endif
 
-#include <iostream>
-
 namespace at {
 namespace native {
 namespace sparse {
@@ -176,7 +174,6 @@ void addmm_dense_result(
     const Scalar& beta,
     const Scalar& alpha,
     const Tensor& C) {
-      std::cerr << "addmm_dense_result" << std::endl;
 #if !AT_USE_MKL_SPARSE()
   TORCH_CHECK(
       false,
@@ -247,7 +244,6 @@ void addmm_sparse_input_dense_result(
     const Scalar& beta,
     const Scalar& alpha,
     const Tensor& C) {
-      std::cerr << "addmm_sparse_input_dense_result" << std::endl;
 #if !AT_USE_MKL_SPARSE()
   TORCH_CHECK(
       false,
@@ -300,7 +296,6 @@ void addmm_sparse_result(
     const Scalar& beta,
     const Scalar& alpha,
     const Tensor& result) {
-      std::cerr << "addmm_sparse_result" << std::endl;
 #if !AT_USE_MKL_SPARSE()
   TORCH_CHECK(
       false,
@@ -366,7 +361,6 @@ void addmm_out_sparse_csr(
     const Scalar& beta,
     const Scalar& alpha,
     const Tensor& result) {
-      std::cerr << "addmm_out_sparse_csr" << std::endl;
   TORCH_INTERNAL_ASSERT_DEBUG_ONLY(
       mat1.dim() == 2 && mat2.dim() == 2 && result.dim() == 2);
   TORCH_INTERNAL_ASSERT(
@@ -511,7 +505,6 @@ void addmv_out_sparse_csr(
     const Scalar& beta,
     const Scalar& alpha,
     const Tensor& result) {
-      std::cerr << "addmv_out_sparse_csr" << std::endl;
 #if !AT_USE_MKL_SPARSE()
   TORCH_CHECK(
       false,
@@ -554,7 +547,6 @@ void add_out_sparse_csr(
     const Tensor& mat2,
     const Scalar& alpha,
     const Tensor& result) {
-      std::cerr << "add_out_sparse_csr" << std::endl;
 #if !AT_USE_MKL_SPARSE()
   TORCH_CHECK(
       false,

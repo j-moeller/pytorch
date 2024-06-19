@@ -26,8 +26,6 @@
 #include <ATen/ops/vdot_native.h>
 #endif
 
-#include <iostream>
-
 namespace at::meta {
 TORCH_META_FUNC(addmv)(const Tensor &self, const Tensor &mat, const Tensor &vec, const Scalar& beta, const Scalar& alpha) {
   TORCH_CHECK((mat.dim() == 2 && vec.dim() == 1 && self.dim() <= 1),
@@ -59,7 +57,6 @@ constexpr inline bool lda_cond(int64_t m, int64_t n, int64_t lda) {
 
 
 TORCH_IMPL_FUNC(addmv_out_cpu)(const Tensor &self, const Tensor &mat, const Tensor &vec, const Scalar& beta_, const Scalar& alpha_, const Tensor& result) {
-  std::cerr << "addmv_out_cpu" << std::endl;
   c10::MaybeOwned<Tensor> self_ = expand_size(self, {mat.size(0)});
   auto betaval = beta_.toComplexDouble();
   if (mat.numel() == 0) {
@@ -160,7 +157,6 @@ inline void dot_check(const Tensor& self, const Tensor& other) {
 }
 
 Tensor dot(const Tensor &self, const Tensor &other){
-  std::cerr << "dot" << std::endl;
   if (self.is_complex()) {
     if (self.is_conj()) {
       if (other.is_conj()) {
@@ -195,7 +191,6 @@ Tensor dot(const Tensor &self, const Tensor &other){
 }
 
 Tensor vdot(const Tensor &self, const Tensor &other){
-  std::cerr << "vdot" << std::endl;
   // Dispatch to `dot` for real dtypes.
   if (!self.is_complex()){
     return at::dot(self, other);
